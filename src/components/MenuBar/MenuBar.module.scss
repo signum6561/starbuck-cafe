@@ -1,0 +1,13 @@
+.wrapper {
+  width: var(--menuBar-width);
+  height: 100vh;
+  background-color: var(--light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .logo-title {
+    margin-bottom: 10px;
+    border-bottom: 2px solid var(--gray);
+  }
+}

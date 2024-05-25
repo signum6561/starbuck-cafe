@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --menuBar-width: 250px;
+  --primary: #016343;
+  --secondary: #1e3932;
+  --green: #97d8b1;
+  --light: #fff;
+  --gray: rgb(219, 217, 215);
+  --primary-text: #000;
+  --secondary-text: #6b6b74;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1rem;
+  text-rendering: optimizeSpeed;
+  color: #000;
+}
