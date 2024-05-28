@@ -30,7 +30,7 @@ export default function Tab({
 }
 
 Tab.propTypes = {
-  value: PropTypes.oneOf([PropTypes.string, PropTypes.number]),
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   handleClick: PropTypes.func,
   children: PropTypes.node,
   startIcon: PropTypes.node,

@@ -1,6 +1,7 @@
+import { MenuBarProvider } from '@context/MenuBarContext';
 import DefaultLayout from '@layout/DefaultLayout';
-import Login from '@pages/Login';
-import Register from '@pages/Register';
+import Login from '@pages/Auth/Login';
+import Register from '@pages/Auth/Register';
 import { createBrowserRouter } from 'react-router-dom';
 
 export const router = createBrowserRouter([
@@ -14,7 +15,11 @@ export const router = createBrowserRouter([
   },
   {
     path: '/',
-    element: <DefaultLayout />,
+    element: (
+      <MenuBarProvider defaultValue={false}>
+        <DefaultLayout />
+      </MenuBarProvider>
+    ),
     children: [
       {
         path: '/dashboard',

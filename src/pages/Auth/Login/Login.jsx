@@ -12,6 +12,7 @@ import classNames from 'classnames/bind';
 import { Icon } from '@iconify/react';
 import * as Yup from 'yup';
 import { useFormik } from 'formik';
+import StarbuckLogo from '@components/StarbuckLogo';
 
 const cx = classNames.bind(styles);
 
@@ -35,9 +36,6 @@ export default function Login() {
     <div className={cx('wrapper')}>
       <div className={cx('main-container')}>
         <h1 className={cx('title')}>Login</h1>
-        <div className={cx('icon-container')}>
-          <Icon className={cx('icon')} icon='mingcute:user-4-fill' />
-        </div>
         <form onSubmit={form.handleSubmit} noValidate>
           <TextField
             id='username'

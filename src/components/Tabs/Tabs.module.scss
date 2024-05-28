@@ -3,11 +3,7 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  padding: 0 10px;
-}
-
-.normal {
-  row-gap: 5px;
+  border-bottom: 2px solid var(--gray);
 }
 
 .fullWidth {

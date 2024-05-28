@@ -13,7 +13,7 @@ const TabProvider = ({ children, defaultValue }) => {
 
 TabProvider.propTypes = {
   children: PropTypes.node,
-  defaultValue: PropTypes.oneOf([PropTypes.string, PropTypes.number]),
+  defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 // eslint-disable-next-line react-refresh/only-export-components

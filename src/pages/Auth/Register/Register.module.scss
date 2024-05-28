@@ -3,9 +3,11 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-image: url('https://wallpapers.com/images/featured/coffee-shop-background-02x9a49rdcr5c18i.jpg');
+  background-image: url('https://stories.starbucks.com/uploads/2020/08/Starbucks-Virtual-Backgrounds-2-Downtown-Disney-Anaheim-1920x1280-1.jpg');
   background-repeat: no-repeat;
-  background-size: 100% 100%;
+  background-position: right bottom;
+  background-size: cover;
+  overflow: hidden;
 
   .main-container {
     padding: 40px;

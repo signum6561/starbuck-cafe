@@ -23,5 +23,5 @@ Tabs.propTypes = {
   fullWidth: PropTypes.bool,
   margin: PropTypes.string,
   children: PropTypes.node,
-  defaultValue: PropTypes.oneOf([PropTypes.string, PropTypes.number]),
+  defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
