@@ -2,6 +2,7 @@ import { MenuBarProvider } from '@context/MenuBarContext';
 import DefaultLayout from '@layout/DefaultLayout';
 import Login from '@pages/Auth/Login';
 import Register from '@pages/Auth/Register';
+import Customers from '@pages/Customers';
 import { createBrowserRouter } from 'react-router-dom';
 
 export const router = createBrowserRouter([
@@ -27,7 +28,7 @@ export const router = createBrowserRouter([
       },
       {
         path: '/customers',
-        element: <h1>Customer</h1>,
+        element: <Customers />,
       },
       {
         path: '/invoices',

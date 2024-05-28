@@ -11,8 +11,7 @@ html {
 }
 
 :root {
-  --menuBar-width: 250px;
-  --breadcumsHeader-height: 50px;
+  // Colors
   --primary: #016343;
   --secondary: #1e3932;
   --green: #97d8b1;
@@ -20,11 +19,22 @@ html {
   --gray: rgb(219, 217, 215);
   --primary-text: #000;
   --secondary-text: #6b6b74;
+
+  // Layout
+  --menuBar-width: 250px;
+  --breadcumsHeader-height: 50px;
+
+  // Others
 }
 
 body {
   font-family: 'Roboto', sans-serif;
   font-size: 1.6rem;
+  line-height: 24px;
   text-rendering: optimizeSpeed;
   color: #000;
+}
+
+.icon-btn {
+  font-size: 2rem;
 }

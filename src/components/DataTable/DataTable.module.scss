@@ -1,0 +1,31 @@
+.wrapper {
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  background-color: var(--light);
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+
+    .field {
+      padding-top: 12px;
+      padding-bottom: 12px;
+      background-color: #04aa6d;
+      color: white;
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+
+    .cell {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+  }
+}
+
+.center {
+  text-align: center;
+}
+
+.right {
+  text-align: right;
+}
