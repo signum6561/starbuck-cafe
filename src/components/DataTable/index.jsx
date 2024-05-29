@@ -1,1 +1,1 @@
-export { default } from './DataTable';
+export { CustomerTable } from './CustomerTable';

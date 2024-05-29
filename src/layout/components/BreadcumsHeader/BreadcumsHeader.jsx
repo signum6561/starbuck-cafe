@@ -10,8 +10,8 @@ export default function BreadcumsHeader() {
 
   return (
     <div className={cx('wrapper')}>
-      <IconButton onClick={toggleMenuBar}>
-        <Icon className={cx('icon-btn')} icon='ic:round-menu' />
+      <IconButton onClick={toggleMenuBar} fontSize='large'>
+        <Icon icon='ic:round-menu' />
       </IconButton>
     </div>
   );

@@ -11,8 +11,11 @@ export const theme = createTheme({
     green: {
       main: '#97d8b1',
     },
+    contrast: {
+      main: '#fff',
+    },
   },
   typography: {
-    fontSize: '1.6rem',
+    htmlFontSize: 10,
   },
 });
