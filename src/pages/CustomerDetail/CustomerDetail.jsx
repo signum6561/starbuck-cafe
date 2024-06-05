@@ -8,7 +8,15 @@ import {
   updateCustomer,
 } from '@redux/features/customerSlice';
 import { useEffect, useState } from 'react';
-import { Button, Divider, Grid, LinearProgress } from '@mui/material';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  Divider,
+  Grid,
+  LinearProgress,
+} from '@mui/material';
 import CustomerForm from '@components/CustomerForm';
 import { Icon } from '@iconify/react';
 
@@ -19,15 +27,17 @@ export default function CustomerDetail() {
   const [back, setBack] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { customer, status } = useSelector((store) => store.customer);
+  const { data, status } = useSelector((store) => store.customer);
+  const [deleteDialog, setDeleteDialog] = useState(false);
   const isLoading = status === 'loading';
+  const customer = data[0];
 
   useEffect(() => {
     dispatch(fetchCustomerById(id));
   }, [dispatch, id]);
 
   useEffect(() => {
-    if (!customer && back) {
+    if (back && !isLoading) {
       navigate('/customers');
     }
   });
@@ -56,7 +66,7 @@ export default function CustomerDetail() {
               Back
             </Button>
           </div>
-          <h2>Customer#{id}</h2>
+          <h2>Customer Detail</h2>
         </div>
         <Divider variant='middle' />
         <div className={cx('cancel-btn')}>
@@ -67,12 +77,16 @@ export default function CustomerDetail() {
               onClick={() => setEditMode(false)}
               disabled={isLoading}
             >
-              Cancel
+              Detail
             </Button>
           )}
         </div>
         {!editMode ? (
           <div className={cx('detail')}>
+            <div className={cx('info')}>
+              <b>ID</b>
+              <p>{customer?.id}</p>
+            </div>
             <div className={cx('info')}>
               <b>Fullname</b>
               <p>{customer?.fullname}</p>
@@ -122,7 +136,7 @@ export default function CustomerDetail() {
                 <Button
                   variant='contained'
                   color='red'
-                  onClick={() => handleDeleteCustomer(id)}
+                  onClick={() => setDeleteDialog(true)}
                   disabled={isLoading}
                   startIcon={<Icon icon='mdi:bin' />}
                   fullWidth
@@ -142,6 +156,22 @@ export default function CustomerDetail() {
           </div>
         )}
       </div>
+      <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
+        <DialogTitle>{`Are you sure you want to delete this customer?`}</DialogTitle>
+        <DialogActions>
+          <Button
+            variant='contained'
+            color='red'
+            onClick={() => {
+              handleDeleteCustomer(id);
+              setDeleteDialog(false);
+            }}
+          >
+            Delete
+          </Button>
+          <Button onClick={() => setDeleteDialog(false)}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

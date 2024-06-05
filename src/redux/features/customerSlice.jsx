@@ -4,12 +4,11 @@ import axios from 'axios';
 const initialState = {
   status: 'idle',
   currentPage: 1,
-  rowsPerPage: 5,
+  rowsPerPage: 10,
   total: 0,
   pageCount: 0,
   data: [],
   selected: [],
-  customer: null,
   sort: {
     column: '',
     order: 'asc',
@@ -28,10 +27,10 @@ export const fetchCustomers = createAsyncThunk(
     const { currentPage, rowsPerPage, filters, sort } =
       thunkAPI.getState().customer;
     const filtersStr = filters.data
-      .map((filter) =>
-        filter.value
-          ? `filters[${filter.column}][$${filter.operator}]=${filter.value}`
-          : '',
+      .filter((filter) => Boolean(filter.value))
+      .map(
+        (filter) =>
+          `filters[${filter.column}][$${filter.operator}]=${filter.value}`,
       )
       .join('&');
     const sortStr = sort.column ? `sort=${sort.column}%3A${sort.order}` : '';
@@ -99,24 +98,6 @@ export const deleteCustomer = createAsyncThunk(
   },
 );
 
-export const deleteMutipleCustomer = createAsyncThunk(
-  'customer/deleteMutopleCustomer',
-  async (selected) => {
-    const token = localStorage.getItem('userToken');
-    const tasks = selected.map((id) => {
-      const url = `${BASE_URL}/${id}`;
-      return axios.delete(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-    });
-    await Promise.all(tasks).catch((error) => {
-      console.error(error);
-    });
-  },
-);
-
 const customerSlice = createSlice({
   name: 'customer',
   initialState,
@@ -177,7 +158,7 @@ const customerSlice = createSlice({
       })
       .addCase(fetchCustomerById.fulfilled, (state, action) => {
         state.status = 'success';
-        state.customer = action.payload.data;
+        state.data = [action.payload.data];
       })
       .addCase(fetchCustomerById.rejected, (state) => {
         state.status = 'failed';
@@ -209,16 +190,6 @@ const customerSlice = createSlice({
         state.customer = null;
       })
       .addCase(deleteCustomer.rejected, (state) => {
-        state.status = 'failed';
-      })
-      .addCase(deleteMutipleCustomer.pending, (state) => {
-        state.status = 'loading';
-      })
-      .addCase(deleteMutipleCustomer.fulfilled, (state) => {
-        state.status = 'success';
-        state.customer = null;
-      })
-      .addCase(deleteMutipleCustomer.rejected, (state) => {
         state.status = 'failed';
       });
   },

@@ -1,11 +1,9 @@
-import { useEffect, useState } from 'react';
 import styles from './Filter.module.scss';
 import classNames from 'classnames/bind';
 import PropTypes from 'prop-types';
 import {
   FormControl,
   IconButton,
-  InputLabel,
   MenuItem,
   Select,
   TextField,
@@ -112,5 +110,6 @@ export default function Filter({
 Filter.propTypes = {
   columns: PropTypes.arrayOf(PropTypes.object).isRequired,
   onFilterChange: PropTypes.func,
+  onRemoveFilter: PropTypes.func,
   value: PropTypes.object,
 };

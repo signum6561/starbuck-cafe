@@ -6,8 +6,9 @@ const MenuBarContext = createContext();
 const useMenuBar = () => useContext(MenuBarContext);
 
 const MenuBarProvider = ({ children }) => {
-  const [menuBar, setMenuBar] = useState(false);
+  const [menuBar, setMenuBar] = useState(sessionStorage.getItem('menuBar'));
   const toggleMenuBar = () => {
+    sessionStorage.setItem('menuBar', !menuBar);
     setMenuBar(!menuBar);
   };
   const values = { menuBar, toggleMenuBar };

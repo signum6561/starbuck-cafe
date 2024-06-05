@@ -8,7 +8,6 @@ import {
   changeSort,
   clearFilter,
   deleteCustomer,
-  deleteMutipleCustomer,
   fetchCustomers,
   removeFilter,
   setSelected,
@@ -16,7 +15,13 @@ import {
 import { CustomerTable } from '@components/DataTable';
 import { useEffect, useState } from 'react';
 import CustomPagination from '@components/CustomPagination';
-import { Button, Popover } from '@mui/material';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  Popover,
+} from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useNavigate } from 'react-router-dom';
 import FilterBuilder from '@components/FilterBuilder';
@@ -28,29 +33,29 @@ const columns = [
   {
     id: 'id',
     label: 'ID',
-    operators: ['eq'],
+    operators: ['eq', 'contains', 'startsWith', 'endsWith'],
   },
   {
     id: 'fullname',
     label: 'Fullname',
-    operators: ['contains', 'eq'],
+    operators: ['eq', 'contains', 'startsWith', 'endsWith'],
     sortable: true,
   },
   {
     id: 'email',
     label: 'Email',
-    operators: ['contains', 'eq'],
+    operators: ['eq', 'contains', 'startsWith', 'endsWith'],
     sortable: true,
   },
   {
     id: 'address',
     label: 'Address',
-    operators: ['contains', 'eq'],
+    operators: ['eq', 'contains', 'startsWith', 'endsWith'],
   },
   {
     id: 'birthday',
     label: 'Birthday',
-    operators: ['contains', 'eq'],
+    operators: ['eq', 'lte', 'lt', 'gt', 'gte'],
     sortable: true,
   },
   {
@@ -63,7 +68,7 @@ const columns = [
   {
     id: 'type',
     label: 'Type',
-    operators: ['contains', 'eq'],
+    operators: ['eq', 'contains'],
   },
 ];
 
@@ -73,6 +78,9 @@ export default function Customers() {
   const navigate = useNavigate();
   const [anchorElFilter, setAnchorElFilter] = useState(null);
   const [anchorElSort, setAnchorElSort] = useState(null);
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [deleteManyDialog, setDeleteManyDialog] = useState(false);
+  const [deleteId, setDeleteId] = useState('');
   const filterOpen = Boolean(anchorElFilter);
   const sortOpen = Boolean(anchorElSort);
 
@@ -102,14 +110,13 @@ export default function Customers() {
   };
 
   const handleDelete = (id) => {
-    dispatch(deleteCustomer(id));
+    setDeleteDialog(true);
+    setDeleteId(id);
   };
 
   const handleDeleteSelected = () => {
+    dispatch(deleteCustomer(selected.join(',')));
     dispatch(setSelected([]));
-    dispatch(deleteMutipleCustomer(selected)).then(() => {
-      dispatch(fetchCustomers());
-    });
   };
 
   const switchMode = () => {
@@ -159,7 +166,7 @@ export default function Customers() {
             variant='contained'
             color='red'
             endIcon={<Icon icon='fluent:subtract-circle-24-filled' />}
-            onClick={() => handleDeleteSelected()}
+            onClick={() => setDeleteManyDialog(true)}
             disabled={isLoading}
           >
             Delete
@@ -214,6 +221,41 @@ export default function Customers() {
           value={filters.data}
         />
       </Popover>
+      <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
+        <DialogTitle>{`Are you sure you want to delete customer ${deleteId}?`}</DialogTitle>
+        <DialogActions>
+          <Button
+            variant='contained'
+            color='red'
+            onClick={() => {
+              dispatch(deleteCustomer(deleteId));
+              setDeleteDialog(false);
+            }}
+          >
+            Delete
+          </Button>
+          <Button onClick={() => setDeleteDialog(false)}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={deleteManyDialog}
+        onClose={() => setDeleteManyDialog(false)}
+      >
+        <DialogTitle>{`Are you sure you want to delete all ${selected.length} selected rows?`}</DialogTitle>
+        <DialogActions>
+          <Button
+            variant='contained'
+            color='red'
+            onClick={() => {
+              handleDeleteSelected();
+              setDeleteManyDialog(false);
+            }}
+          >
+            Delete
+          </Button>
+          <Button onClick={() => setDeleteManyDialog(false)}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
       <CustomerTable
         data={data}
         loading={status === 'loading'}

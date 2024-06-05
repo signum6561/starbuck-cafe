@@ -17,10 +17,10 @@ export default function CustomerNew() {
   const isLoading = status === 'loading';
 
   useEffect(() => {
-    if (back && status !== 'loading') {
+    if (back && !isLoading) {
       navigate('/customers');
     }
-  }, [back, navigate, status]);
+  }, [back, isLoading, navigate]);
 
   const handleCreateCustomer = (customer) => {
     dispatch(createCustomer(customer));
@@ -45,7 +45,7 @@ export default function CustomerNew() {
         </div>
         <Divider variant='middle' />
         <div className={cx('form-container')}>
-          <CustomerForm onSubmit={handleCreateCustomer} />
+          <CustomerForm onSubmit={handleCreateCustomer} loading={isLoading} />
         </div>
       </div>
     </div>

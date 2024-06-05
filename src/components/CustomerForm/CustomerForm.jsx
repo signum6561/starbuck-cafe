@@ -57,6 +57,7 @@ export default function CustomerForm({ onSubmit, editedCustomer, loading }) {
         starPoints: editedCustomer.starPoints,
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editedCustomer]);
 
   return (
