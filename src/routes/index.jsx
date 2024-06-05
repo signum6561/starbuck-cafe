@@ -3,6 +3,7 @@ import DefaultLayout from '@layout/DefaultLayout';
 import Login from '@pages/Auth/Login';
 import Register from '@pages/Auth/Register';
 import CustomerDetail from '@pages/CustomerDetail';
+import CustomerNew from '@pages/CustomerNew';
 import Customers from '@pages/Customers';
 import { createBrowserRouter } from 'react-router-dom';
 
@@ -16,9 +17,9 @@ export const router = createBrowserRouter([
     element: <Register />,
   },
   {
-    path: '/',
+    path: '',
     element: (
-      <MenuBarProvider defaultValue={false}>
+      <MenuBarProvider>
         <DefaultLayout />
       </MenuBarProvider>
     ),
@@ -30,15 +31,14 @@ export const router = createBrowserRouter([
       {
         path: '/customers',
         element: <Customers />,
-        children: [
-          {
-            element: <CustomerDetail />,
-            path: ':customerId',
-            loader: async ({ params }) => {
-              return [{ name: 'John' }];
-            },
-          },
-        ],
+      },
+      {
+        path: '/customers/:id/:action',
+        element: <CustomerDetail />,
+      },
+      {
+        path: '/customers/new',
+        element: <CustomerNew />,
       },
       {
         path: '/invoices',

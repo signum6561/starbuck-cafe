@@ -5,9 +5,11 @@ const MenuBarContext = createContext();
 
 const useMenuBar = () => useContext(MenuBarContext);
 
-const MenuBarProvider = ({ children, defaultValue }) => {
-  const [menuBar, setMenuBar] = useState(defaultValue);
-  const toggleMenuBar = () => setMenuBar(!menuBar);
+const MenuBarProvider = ({ children }) => {
+  const [menuBar, setMenuBar] = useState(false);
+  const toggleMenuBar = () => {
+    setMenuBar(!menuBar);
+  };
   const values = { menuBar, toggleMenuBar };
   return (
     <MenuBarContext.Provider value={values}>{children}</MenuBarContext.Provider>
@@ -16,7 +18,6 @@ const MenuBarProvider = ({ children, defaultValue }) => {
 
 MenuBarProvider.propTypes = {
   children: PropTypes.node,
-  defaultValue: PropTypes.bool,
 };
 
 // eslint-disable-next-line react-refresh/only-export-components

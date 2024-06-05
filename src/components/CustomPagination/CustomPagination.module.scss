@@ -1,0 +1,23 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background-color: var(--light);
+  flex-wrap: wrap;
+  justify-content: center;
+
+  .rowsAffected {
+    padding: 10px;
+    flex-grow: 1;
+  }
+
+  .rowsPerPage {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+
+    p {
+      margin-right: 10px;
+    }
+  }
+}

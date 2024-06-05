@@ -6,13 +6,21 @@ import Tab from '@components/Tab';
 import { useNavigate } from 'react-router-dom';
 import TabsList from '@components/TabsList';
 import { Avatar, Button, Menu, MenuItem, Paper } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getUserData, logout } from '@redux/features/authSlice';
 
 const cx = classNames.bind(styles);
 export default function MenuBar() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [menuOpen, setMenuOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const { user } = useSelector((store) => store.auth);
+
+  useEffect(() => {
+    dispatch(getUserData());
+  }, [dispatch]);
 
   return (
     <div className={cx('wrapper')}>
@@ -73,10 +81,7 @@ export default function MenuBar() {
       </div>
       <div
         className={cx('user-profile')}
-        onClick={(e) => {
-          setAnchorEl(e.currentTarget);
-          console.log(e.currentTarget);
-        }}
+        onClick={(e) => setAnchorEl(e.currentTarget)}
       >
         <Button
           sx={{ justifyContent: 'flex-start' }}
@@ -87,8 +92,8 @@ export default function MenuBar() {
         >
           <Avatar />
           <div className={cx('user-info')}>
-            <p className={cx('username')}>Signum6561</p>
-            <p className={cx('email')}>example@gmail.com</p>
+            <p className={cx('username')}>{user?.username}</p>
+            <p className={cx('email')}>{user?.email}</p>
           </div>
         </Button>
       </div>
@@ -101,7 +106,7 @@ export default function MenuBar() {
         >
           <MenuItem>Profile</MenuItem>
           <MenuItem>My account</MenuItem>
-          <MenuItem>Logout</MenuItem>
+          <MenuItem onClick={() => dispatch(logout())}>Logout</MenuItem>
         </Menu>
       </Paper>
     </div>

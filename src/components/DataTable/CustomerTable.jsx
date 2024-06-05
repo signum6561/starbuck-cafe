@@ -1,73 +1,53 @@
 import {
   Checkbox,
   CircularProgress,
-  LinearProgress,
+  IconButton,
   Link,
+  Menu,
+  MenuItem,
 } from '@mui/material';
 import styles from './DataTable.module.scss';
 import classNames from 'classnames/bind';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
 import { Icon } from '@iconify/react';
-import { useDispatch, useSelector } from 'react-redux';
-import { setSelected } from '@redux/customerSlice';
+import { useDispatch } from 'react-redux';
+import { setSelected } from '@redux/features/customerSlice';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const cx = classNames.bind(styles);
 
-const columns = [
-  {
-    id: 'id',
-    label: 'ID',
-  },
-  {
-    id: 'fullname',
-    label: 'Fullname',
-  },
-  {
-    id: 'email',
-    label: 'Email',
-  },
-  {
-    id: 'address',
-    label: 'Address',
-  },
-  {
-    id: 'birthday',
-    label: 'Birthday',
-  },
-  {
-    id: 'starPoints',
-    label: 'Star Points',
-  },
-  {
-    id: 'type',
-    label: 'Type',
-  },
-];
-
-const TableRow = ({ obj, checked, onClick }) => {
+const TableRow = ({ obj, checked, onClick, selectMode, onOptionClick }) => {
   return (
-    <tr onClick={() => onClick(obj.id)}>
-      <td className={cx('select-checkbox', 'center')}>
-        <Checkbox checked={checked} />
+    <tr onClick={selectMode ? () => onClick(obj.id) : null}>
+      <td align='center'>
+        {selectMode ? (
+          <Checkbox checked={checked} />
+        ) : (
+          <IconButton onClick={(e) => onOptionClick(e, obj.id)}>
+            <Icon icon='mdi:dots-vertical' />
+          </IconButton>
+        )}
       </td>
-      <td className={cx('cell', 'center')}>
-        <Link underline='hover'>{obj.id}</Link>
+      <td align='center' className={cx('cell')}>
+        <Link href={`customers/${obj.id}/detail`} underline='hover'>
+          {obj.id}
+        </Link>
       </td>
       <td className={cx('cell')}>{obj.fullname}</td>
       <td className={cx('cell')}>{obj.email}</td>
       <td className={cx('cell')}>{obj.address}</td>
-      <td className={cx('cell')}>{obj.birthday}</td>
-      <td className={cx('cell', 'left')}>
-        <div className={cx('stars')}>
-          <Icon icon='emojione:star' />
-          {obj.starPoints}
-        </div>
+      <td align='center' className={cx('cell')}>
+        {obj.birthday}
+      </td>
+      <td align='center' className={cx('cell')}>
+        <Icon icon='emojione:star' />
+        {obj.starPoints}
       </td>
       <td
+        align='center'
         className={cx(
           'cell',
-          'center',
           cx(obj.type === 'Gold' ? 'gold-type' : 'green-type'),
         )}
       >
@@ -81,14 +61,28 @@ TableRow.propTypes = {
   obj: PropTypes.object.isRequired,
   onClick: PropTypes.func,
   checked: PropTypes.bool,
+  selectMode: PropTypes.bool,
+  onOptionClick: PropTypes.func,
 };
 
-export function CustomerTable({ data }) {
-  const dispatch = useDispatch();
-  const selected = useSelector((store) => store.customerReducer.selected);
-  const status = useSelector((store) => store.customerReducer.status);
+export function CustomerTable({
+  data,
+  loading,
+  selected,
+  selectMode,
+  handleDelete,
+  columns,
+}) {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  const [id, setId] = useState(0);
+  const navigate = useNavigate();
 
-  const isItemSelected = (item) => selected.includes(item);
+  const dispatch = useDispatch();
+
+  const isItemSelected = (item) => {
+    return selected.includes(item);
+  };
 
   const handleSelect = (item) => {
     if (!isItemSelected(item)) {
@@ -107,21 +101,29 @@ export function CustomerTable({ data }) {
     dispatch(setSelected([]));
   };
 
+  const handleCloseOption = () => setAnchorEl(null);
+  const handleOpenOption = (e, id) => {
+    setId(id);
+    setAnchorEl(e.currentTarget);
+  };
+
   return (
     <div className={cx('wrapper')}>
       <table>
         <thead>
           <tr>
-            <th key='checkbox' className={cx('select-checkbox', 'center')}>
-              <Checkbox
-                onChange={handleSelectAll}
-                checked={selected.length === data.length}
-                indeterminate={
-                  selected.length > 0 && selected.length < data.length
-                }
-                sx={{ color: 'var(--light)' }}
-                color='contrast'
-              />
+            <th>
+              {selectMode && (
+                <Checkbox
+                  onChange={handleSelectAll}
+                  checked={selected.length === data.length}
+                  indeterminate={
+                    selected.length > 0 && selected.length < data.length
+                  }
+                  sx={{ color: 'var(--light)' }}
+                  color='contrast'
+                />
+              )}
             </th>
             {columns.map((col) => (
               <th className={cx('field')} key={col.id}>
@@ -131,10 +133,10 @@ export function CustomerTable({ data }) {
           </tr>
         </thead>
         <tbody>
-          {status === 'loading' && (
-            <tr className={cx('loading')}>
+          {loading && (
+            <div className={cx('loading')}>
               <CircularProgress thickness={5} />
-            </tr>
+            </div>
           )}
           {data.map((row) => {
             return (
@@ -143,15 +145,42 @@ export function CustomerTable({ data }) {
                 obj={row}
                 checked={isItemSelected(row.id)}
                 onClick={handleSelect}
+                selectMode={selectMode}
+                onOptionClick={handleOpenOption}
               />
             );
           })}
         </tbody>
       </table>
+      <Menu anchorEl={anchorEl} open={open} onClose={handleCloseOption}>
+        <MenuItem
+          sx={{ width: '100px' }}
+          onClick={() => navigate(`/customers/${id}/detail`)}
+        >
+          Detail
+        </MenuItem>
+        <MenuItem onClick={() => navigate(`/customers/${id}/edit`)}>
+          Edit
+        </MenuItem>
+        <MenuItem
+          sx={{ color: '#ff0000' }}
+          onClick={() => {
+            handleDelete(id);
+            handleCloseOption();
+          }}
+        >
+          Delete
+        </MenuItem>
+      </Menu>
     </div>
   );
 }
 
 CustomerTable.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
+  loading: PropTypes.bool,
+  selected: PropTypes.array,
+  selectMode: PropTypes.bool,
+  handleDelete: PropTypes.func,
+  columns: PropTypes.arrayOf(PropTypes.object),
 };

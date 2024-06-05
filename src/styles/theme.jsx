@@ -14,6 +14,10 @@ export const theme = createTheme({
     contrast: {
       main: '#fff',
     },
+    red: {
+      main: '#e84338',
+      contrastText: '#fff',
+    },
   },
   typography: {
     htmlFontSize: 10,
