@@ -3,7 +3,7 @@ import styles from './MenuBar.module.scss';
 import classNames from 'classnames/bind';
 import Tabs from '@components/Tabs';
 import Tab from '@components/Tab';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import TabsList from '@components/TabsList';
 import { Avatar, Button, Menu, MenuItem, Paper } from '@mui/material';
 import { useEffect, useState } from 'react';
@@ -17,6 +17,8 @@ export default function MenuBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const { user } = useSelector((store) => store.auth);
+  const location = useLocation();
+  console.log(location);
 
   useEffect(() => {
     dispatch(getUserData());

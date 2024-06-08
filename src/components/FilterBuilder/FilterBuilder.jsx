@@ -47,5 +47,6 @@ FilterBuilder.propTypes = {
   config: PropTypes.arrayOf(PropTypes.object).isRequired,
   onAddFilter: PropTypes.func,
   onDeleteFilter: PropTypes.func,
+  onClearFilter: PropTypes.func,
   value: PropTypes.arrayOf(PropTypes.object),
 };

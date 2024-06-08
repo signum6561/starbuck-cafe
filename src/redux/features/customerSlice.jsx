@@ -4,7 +4,7 @@ import axios from 'axios';
 const initialState = {
   status: 'idle',
   currentPage: 1,
-  rowsPerPage: 10,
+  rowsPerPage: sessionStorage.getItem('rowsPerPage') ?? 10,
   total: 0,
   pageCount: 0,
   data: [],
@@ -17,6 +17,48 @@ const initialState = {
     start: 0,
     data: [],
   },
+  columns: [
+    {
+      id: 'id',
+      label: 'ID',
+      operators: ['eq', 'contains', 'startsWith', 'endsWith'],
+    },
+    {
+      id: 'fullname',
+      label: 'Fullname',
+      operators: ['eq', 'contains', 'startsWith', 'endsWith'],
+      sortable: true,
+    },
+    {
+      id: 'email',
+      label: 'Email',
+      operators: ['eq', 'contains', 'startsWith', 'endsWith'],
+      sortable: true,
+    },
+    {
+      id: 'address',
+      label: 'Address',
+      operators: ['eq', 'contains', 'startsWith', 'endsWith'],
+    },
+    {
+      id: 'birthday',
+      label: 'Birthday',
+      operators: ['eq', 'lte', 'lt', 'gt', 'gte'],
+      sortable: true,
+    },
+    {
+      id: 'starPoints',
+      label: 'Star Points',
+      operators: ['eq', 'lte', 'lt', 'gt', 'gte'],
+      type: 'number',
+      sortable: true,
+    },
+    {
+      id: 'type',
+      label: 'Type',
+      operators: ['eq', 'contains'],
+    },
+  ],
 };
 
 const BASE_URL = 'http://localhost:8000/api/v1/customers';
@@ -34,7 +76,7 @@ export const fetchCustomers = createAsyncThunk(
       )
       .join('&');
     const sortStr = sort.column ? `sort=${sort.column}%3A${sort.order}` : '';
-    const token = localStorage.getItem('userToken');
+    const { token } = thunkAPI.getState().auth;
     const res = await axios.get(
       `${BASE_URL}?page=${currentPage}&perPage=${rowsPerPage}&${filtersStr}&${sortStr}`,
       {
@@ -49,8 +91,8 @@ export const fetchCustomers = createAsyncThunk(
 
 export const fetchCustomerById = createAsyncThunk(
   'customer/fetchCustomerById',
-  async (id) => {
-    const token = localStorage.getItem('userToken');
+  async (id, thunkAPI) => {
+    const { token } = thunkAPI.getState().auth;
     const res = await axios.get(`${BASE_URL}/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -62,8 +104,8 @@ export const fetchCustomerById = createAsyncThunk(
 
 export const createCustomer = createAsyncThunk(
   'customer/createCustomer',
-  async (customer) => {
-    const token = localStorage.getItem('userToken');
+  async (customer, thunkAPI) => {
+    const { token } = thunkAPI.getState().auth;
     await axios.post(`${BASE_URL}`, customer, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -74,8 +116,8 @@ export const createCustomer = createAsyncThunk(
 
 export const updateCustomer = createAsyncThunk(
   'customer/updateCustomer',
-  async (customer) => {
-    const token = localStorage.getItem('userToken');
+  async (customer, thunkAPI) => {
+    const { token } = thunkAPI.getState().auth;
     await axios.put(`${BASE_URL}/${customer.id}`, customer, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -87,7 +129,7 @@ export const updateCustomer = createAsyncThunk(
 export const deleteCustomer = createAsyncThunk(
   'customer/deleteCustomer',
   async (id, thunkAPI) => {
-    const token = localStorage.getItem('userToken');
+    const { token } = thunkAPI.getState().auth;
     await axios.delete(`${BASE_URL}/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -110,15 +152,16 @@ const customerSlice = createSlice({
     },
     changeRowsPerPage: (state, action) => {
       state.rowsPerPage = action.payload;
+      sessionStorage.setItem('rowsPerPage', action.payload);
       state.currentPage = 1;
     },
     addFilter: (state, action) => {
       const filter = action.payload;
       state.filters.start++;
       const { start, data } = state.filters;
-      const index = data.findIndex((val) => val.id === filter.id);
-      if (index !== -1) {
-        state.filters.data[index] = filter;
+      const idx = data.findIndex((val) => val.id === filter.id);
+      if (idx !== -1) {
+        state.filters.data[idx] = filter;
       } else {
         state.filters.data = [...data, { ...filter, id: start }];
       }
@@ -133,6 +176,27 @@ const customerSlice = createSlice({
     },
     changeSort: (state, action) => {
       state.sort = action.payload;
+    },
+    hideColumn: (state, action) => {
+      const { columnId, value } = action.payload;
+      const columns = state.columns;
+      const idx = columns.findIndex((col) => col.id === columnId);
+      if (idx !== -1) {
+        state.columns[idx].hide = value;
+      }
+    },
+    resetToDefault: (state) => {
+      state.columns = state.columns.map((col) => {
+        return { ...col, hide: false };
+      });
+      state.filters = {
+        start: 0,
+        data: [],
+      };
+      state.sort = {
+        column: '',
+        order: 'asc',
+      };
     },
   },
   extraReducers(builder) {
@@ -203,6 +267,8 @@ export const {
   removeFilter,
   clearFilter,
   changeSort,
+  hideColumn,
+  resetToDefault,
 } = customerSlice.actions;
 
 export default customerSlice.reducer;

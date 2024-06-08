@@ -9,11 +9,13 @@ import {
   clearFilter,
   deleteCustomer,
   fetchCustomers,
+  hideColumn,
   removeFilter,
+  resetToDefault,
   setSelected,
 } from '@redux/features/customerSlice';
 import { CustomerTable } from '@components/DataTable';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import CustomPagination from '@components/CustomPagination';
 import {
   Button,
@@ -26,51 +28,9 @@ import { Icon } from '@iconify/react';
 import { useNavigate } from 'react-router-dom';
 import FilterBuilder from '@components/FilterBuilder';
 import SortBuilder from '@components/SortBuilder';
+import ManageColumn from '@components/ManageColumn';
 
 const cx = classNames.bind(styles);
-
-const columns = [
-  {
-    id: 'id',
-    label: 'ID',
-    operators: ['eq', 'contains', 'startsWith', 'endsWith'],
-  },
-  {
-    id: 'fullname',
-    label: 'Fullname',
-    operators: ['eq', 'contains', 'startsWith', 'endsWith'],
-    sortable: true,
-  },
-  {
-    id: 'email',
-    label: 'Email',
-    operators: ['eq', 'contains', 'startsWith', 'endsWith'],
-    sortable: true,
-  },
-  {
-    id: 'address',
-    label: 'Address',
-    operators: ['eq', 'contains', 'startsWith', 'endsWith'],
-  },
-  {
-    id: 'birthday',
-    label: 'Birthday',
-    operators: ['eq', 'lte', 'lt', 'gt', 'gte'],
-    sortable: true,
-  },
-  {
-    id: 'starPoints',
-    label: 'Star Points',
-    operators: ['eq', 'lte', 'lt', 'gt', 'gte'],
-    type: 'number',
-    sortable: true,
-  },
-  {
-    id: 'type',
-    label: 'Type',
-    operators: ['eq', 'contains'],
-  },
-];
 
 export default function Customers() {
   const dispatch = useDispatch();
@@ -78,14 +38,13 @@ export default function Customers() {
   const navigate = useNavigate();
   const [anchorElFilter, setAnchorElFilter] = useState(null);
   const [anchorElSort, setAnchorElSort] = useState(null);
-  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [anchorElColumn, setAnchorElColumn] = useState(null);
   const [deleteManyDialog, setDeleteManyDialog] = useState(false);
-  const [deleteId, setDeleteId] = useState('');
   const filterOpen = Boolean(anchorElFilter);
   const sortOpen = Boolean(anchorElSort);
+  const columnsOpen = Boolean(anchorElColumn);
 
   const {
-    data,
     currentPage,
     rowsPerPage,
     pageCount,
@@ -93,12 +52,9 @@ export default function Customers() {
     status,
     filters,
     sort,
+    columns,
   } = useSelector((store) => store.customer);
   const isLoading = status === 'loading';
-
-  useEffect(() => {
-    dispatch(fetchCustomers());
-  }, [currentPage, dispatch, rowsPerPage]);
 
   const handleChangePage = (e, newPage) => {
     dispatch(setSelected([]));
@@ -106,12 +62,8 @@ export default function Customers() {
   };
 
   const handleChangePageSize = (e) => {
+    dispatch(setSelected([]));
     dispatch(changeRowsPerPage(e.target.value));
-  };
-
-  const handleDelete = (id) => {
-    setDeleteDialog(true);
-    setDeleteId(id);
   };
 
   const handleDeleteSelected = () => {
@@ -134,6 +86,10 @@ export default function Customers() {
 
   const handleChangeSort = (sort) => {
     dispatch(changeSort(sort));
+  };
+
+  const handleHideColumn = (e, colId) => {
+    dispatch(hideColumn({ columnId: colId, value: !e.target.checked }));
   };
 
   return (
@@ -159,6 +115,18 @@ export default function Customers() {
             onClick={(e) => setAnchorElSort(e.currentTarget)}
           >
             Sort
+          </Button>
+          <Button
+            onClick={(e) => setAnchorElColumn(e.currentTarget)}
+            endIcon={<Icon icon='ic:round-view-column' />}
+          >
+            Columns
+          </Button>
+          <Button
+            onClick={() => dispatch(resetToDefault())}
+            endIcon={<Icon icon='mage:settings-fill' />}
+          >
+            Default
           </Button>
         </div>
         {selectMode && (
@@ -221,22 +189,6 @@ export default function Customers() {
           value={filters.data}
         />
       </Popover>
-      <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
-        <DialogTitle>{`Are you sure you want to delete customer ${deleteId}?`}</DialogTitle>
-        <DialogActions>
-          <Button
-            variant='contained'
-            color='red'
-            onClick={() => {
-              dispatch(deleteCustomer(deleteId));
-              setDeleteDialog(false);
-            }}
-          >
-            Delete
-          </Button>
-          <Button onClick={() => setDeleteDialog(false)}>Cancel</Button>
-        </DialogActions>
-      </Dialog>
       <Dialog
         open={deleteManyDialog}
         onClose={() => setDeleteManyDialog(false)}
@@ -256,14 +208,18 @@ export default function Customers() {
           <Button onClick={() => setDeleteManyDialog(false)}>Cancel</Button>
         </DialogActions>
       </Dialog>
-      <CustomerTable
-        data={data}
-        loading={status === 'loading'}
-        selected={selected}
-        selectMode={selectMode}
-        handleDelete={handleDelete}
-        columns={columns}
-      />
+      <Popover
+        open={columnsOpen}
+        anchorEl={anchorElColumn}
+        onClose={() => setAnchorElColumn(null)}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+      >
+        <ManageColumn columns={columns} onHideColumn={handleHideColumn} />
+      </Popover>
+      <CustomerTable selectMode={selectMode} />
       <CustomPagination
         rowsAffected={selected.length}
         rowsPerPage={rowsPerPage}

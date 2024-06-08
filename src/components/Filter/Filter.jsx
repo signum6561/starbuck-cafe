@@ -7,8 +7,10 @@ import {
   MenuItem,
   Select,
   TextField,
+  debounce,
 } from '@mui/material';
 import { Icon } from '@iconify/react';
+import { useCallback } from 'react';
 
 const cx = classNames.bind(styles);
 
@@ -42,6 +44,11 @@ export default function Filter({
     });
   };
 
+  const debounceFilterChange = useCallback(
+    debounce((filter) => onFilterChange(filter), 100),
+    [],
+  );
+
   const handleChangeOperator = (e) => {
     onFilterChange({
       ...filter,
@@ -51,7 +58,7 @@ export default function Filter({
   };
 
   const handleChangeValue = (e) => {
-    onFilterChange({
+    debounceFilterChange({
       ...filter,
       value: e.target.value,
     });

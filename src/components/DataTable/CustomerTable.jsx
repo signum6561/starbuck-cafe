@@ -1,6 +1,10 @@
 import {
+  Button,
   Checkbox,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogTitle,
   IconButton,
   Link,
   Menu,
@@ -10,9 +14,13 @@ import styles from './DataTable.module.scss';
 import classNames from 'classnames/bind';
 import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
-import { useDispatch } from 'react-redux';
-import { setSelected } from '@redux/features/customerSlice';
-import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  deleteCustomer,
+  fetchCustomers,
+  setSelected,
+} from '@redux/features/customerSlice';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const cx = classNames.bind(styles);
@@ -34,13 +42,19 @@ const TableRow = ({ obj, checked, onClick, selectMode, onOptionClick }) => {
           {obj.id}
         </Link>
       </td>
-      <td className={cx('cell')}>{obj.fullname}</td>
-      <td className={cx('cell')}>{obj.email}</td>
-      <td className={cx('cell')}>{obj.address}</td>
-      <td align='center' className={cx('cell')}>
+      <td className={cx('cell')} hidden={!obj.fullname}>
+        {obj.fullname}
+      </td>
+      <td className={cx('cell')} hidden={!obj.email}>
+        {obj.email}
+      </td>
+      <td className={cx('cell')} hidden={!obj.address}>
+        {obj.address}
+      </td>
+      <td align='center' className={cx('cell')} hidden={!obj.birthday}>
         {obj.birthday}
       </td>
-      <td align='center' className={cx('cell')}>
+      <td align='center' className={cx('cell')} hidden={!obj.starPoints}>
         <Icon icon='emojione:star' />
         {obj.starPoints}
       </td>
@@ -50,6 +64,7 @@ const TableRow = ({ obj, checked, onClick, selectMode, onOptionClick }) => {
           'cell',
           cx(obj.type === 'Gold' ? 'gold-type' : 'green-type'),
         )}
+        hidden={!obj.type}
       >
         <b>{obj.type}</b>
       </td>
@@ -65,24 +80,24 @@ TableRow.propTypes = {
   onOptionClick: PropTypes.func,
 };
 
-export function CustomerTable({
-  data,
-  loading,
-  selected,
-  selectMode,
-  handleDelete,
-  columns,
-}) {
+export function CustomerTable({ selectMode }) {
+  const { data, currentPage, rowsPerPage, filters, columns, status, selected } =
+    useSelector((store) => store.customer);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [deleteDialog, setDeleteDialog] = useState(false);
   const open = Boolean(anchorEl);
-  const [id, setId] = useState(0);
+  const [id, setId] = useState('');
   const navigate = useNavigate();
-
   const dispatch = useDispatch();
+  const isLoading = status === 'loading';
 
   const isItemSelected = (item) => {
     return selected.includes(item);
   };
+
+  useEffect(() => {
+    dispatch(fetchCustomers());
+  }, [currentPage, dispatch, rowsPerPage, filters]);
 
   const handleSelect = (item) => {
     if (!isItemSelected(item)) {
@@ -107,6 +122,20 @@ export function CustomerTable({
     setAnchorEl(e.currentTarget);
   };
 
+  const handleDelete = (id) => {
+    dispatch(deleteCustomer(id));
+  };
+
+  const exceptColumns = columns.filter((col) => col.hide).map((col) => col.id);
+  const customerList =
+    exceptColumns.length > 0
+      ? data.map((val) => {
+          return Object.entries(val)
+            .filter(([key]) => !exceptColumns.includes(key))
+            .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+        })
+      : data;
+
   return (
     <div className={cx('wrapper')}>
       <table>
@@ -125,20 +154,22 @@ export function CustomerTable({
                 />
               )}
             </th>
-            {columns.map((col) => (
-              <th className={cx('field')} key={col.id}>
-                {col.label}
-              </th>
-            ))}
+            {columns
+              .filter((col) => !col.hide)
+              .map((col) => (
+                <th className={cx('field')} key={col.id}>
+                  {col.label}
+                </th>
+              ))}
           </tr>
         </thead>
         <tbody>
-          {loading && (
+          {isLoading && (
             <div className={cx('loading')}>
               <CircularProgress thickness={5} />
             </div>
           )}
-          {data.map((row) => {
+          {customerList.map((row) => {
             return (
               <TableRow
                 key={row.id}
@@ -164,23 +195,31 @@ export function CustomerTable({
         </MenuItem>
         <MenuItem
           sx={{ color: '#ff0000' }}
-          onClick={() => {
-            handleDelete(id);
-            handleCloseOption();
-          }}
+          onClick={() => setDeleteDialog(true)}
         >
           Delete
         </MenuItem>
       </Menu>
+      <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
+        <DialogTitle>{`Are you sure you want to delete customer ${id}?`}</DialogTitle>
+        <DialogActions>
+          <Button
+            variant='contained'
+            color='red'
+            onClick={() => {
+              handleDelete(id);
+              setDeleteDialog(false);
+            }}
+          >
+            Delete
+          </Button>
+          <Button onClick={() => setDeleteDialog(false)}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
 
 CustomerTable.propTypes = {
-  data: PropTypes.arrayOf(PropTypes.object),
-  loading: PropTypes.bool,
-  selected: PropTypes.array,
   selectMode: PropTypes.bool,
-  handleDelete: PropTypes.func,
-  columns: PropTypes.arrayOf(PropTypes.object),
 };
