@@ -22,29 +22,4 @@
     overflow: hidden;
     overflow-y: auto;
   }
-
-  .user-profile {
-    display: flex;
-    width: 100%;
-    background-color: var(--secondary);
-    padding: 5px;
-    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-    color: var(--secondary-text);
-
-    .user-info {
-      margin-left: 10px;
-      text-transform: none;
-      text-align: left;
-      line-height: 1.8rem;
-      color: var(--light);
-
-      .username {
-        font-weight: 800;
-      }
-
-      .email {
-        font-weight: 300;
-      }
-    }
-  }
 }

@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 const BASE_URL = 'http://localhost:8000/api/auth';
 
@@ -34,7 +35,7 @@ export const register = createAsyncThunk(
 );
 
 export const logout = createAsyncThunk('auth/logout', async () => {
-  const token = localStorage.getItem('userToken');
+  const token = Cookies.get('userToken');
   await axios
     .post(
       `${BASE_URL}/logout`,
@@ -49,7 +50,7 @@ export const logout = createAsyncThunk('auth/logout', async () => {
 });
 
 export const getUserData = createAsyncThunk('auth/getUserData', async () => {
-  const token = localStorage.getItem('userToken');
+  const token = Cookies.get('userToken');
   const res = await axios
     .get(`${BASE_URL}/user`, {
       headers: {
@@ -62,7 +63,7 @@ export const getUserData = createAsyncThunk('auth/getUserData', async () => {
 
 const initialState = {
   status: 'idle',
-  token: localStorage.getItem('userToken') ?? '',
+  token: Cookies.get('userToken') ?? '',
   user: null,
   failed: null,
 };
@@ -78,8 +79,9 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.status = 'success';
-        localStorage.setItem('userToken', action.payload.token);
-        state.token = action.payload.token;
+        const token = action.payload.token;
+        Cookies.set('userToken', token, { path: '', secure: true });
+        state.token = token;
       })
       .addCase(login.rejected, (state, action) => {
         state.status = 'failed';
@@ -90,7 +92,7 @@ const authSlice = createSlice({
       })
       .addCase(logout.fulfilled, (state) => {
         state.status = 'success';
-        localStorage.removeItem('userToken');
+        Cookies.remove('userToken');
         state.token = '';
       })
       .addCase(logout.rejected, (state) => {
@@ -101,8 +103,9 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.status = 'success';
-        localStorage.setItem('userToken', action.payload.token);
-        state.token = action.payload.token;
+        const token = action.payload.token;
+        Cookies.set('userToken', token, { path: '', secure: true });
+        state.token = token;
       })
       .addCase(register.rejected, (state, action) => {
         state.status = 'failed';

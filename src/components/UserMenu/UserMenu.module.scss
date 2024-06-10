@@ -1,0 +1,18 @@
+.wrapper {
+  .user-profile {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 10px;
+
+    .username {
+      font-weight: 800;
+    }
+
+    .email {
+      font-weight: 300;
+    }
+  }
+}

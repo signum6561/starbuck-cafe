@@ -37,6 +37,7 @@ export default function CustomerNew() {
               variant='outlined'
               startIcon={<Icon icon='ic:round-arrow-back-ios' />}
               onClick={() => navigate(-1)}
+              disabled={isLoading}
             >
               Back
             </Button>

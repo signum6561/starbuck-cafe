@@ -43,7 +43,7 @@ const initialState = {
     {
       id: 'birthday',
       label: 'Birthday',
-      operators: ['eq', 'lte', 'lt', 'gt', 'gte'],
+      operators: ['eq', 'lte', 'lt', 'gt', 'gte', 'contains'],
       sortable: true,
     },
     {
@@ -91,13 +91,16 @@ export const fetchCustomers = createAsyncThunk(
 
 export const fetchCustomerById = createAsyncThunk(
   'customer/fetchCustomerById',
-  async (id, thunkAPI) => {
+  async ({ id, includeInvoices = false }, thunkAPI) => {
     const { token } = thunkAPI.getState().auth;
-    const res = await axios.get(`${BASE_URL}/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
+    const res = await axios.get(
+      `${BASE_URL}/${id}${includeInvoices ? '?includeInvoices=true' : ''}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
     return res.data;
   },
 );
@@ -179,10 +182,20 @@ const customerSlice = createSlice({
     },
     hideColumn: (state, action) => {
       const { columnId, value } = action.payload;
+      const { filters, sort } = state;
       const columns = state.columns;
       const idx = columns.findIndex((col) => col.id === columnId);
       if (idx !== -1) {
         state.columns[idx].hide = value;
+      }
+      state.filters.data = filters.data.filter(
+        (val) => val.column !== columnId,
+      );
+      if (sort.column === columnId) {
+        state.sort = {
+          column: '',
+          order: 'asc',
+        };
       }
     },
     resetToDefault: (state) => {

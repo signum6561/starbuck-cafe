@@ -50,6 +50,13 @@
       }
     }
 
+    .cell {
+      a {
+        text-decoration: none;
+        color: var(--primary);
+      }
+    }
+
     .field {
       text-align: center;
     }
@@ -67,4 +74,9 @@
   .gold-type {
     background-color: rgba(208, 254, 0);
   }
+}
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding: 5px;
 }

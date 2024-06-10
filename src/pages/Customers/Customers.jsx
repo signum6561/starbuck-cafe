@@ -15,7 +15,7 @@ import {
   setSelected,
 } from '@redux/features/customerSlice';
 import { CustomerTable } from '@components/DataTable';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import CustomPagination from '@components/CustomPagination';
 import {
   Button,
@@ -23,6 +23,7 @@ import {
   DialogActions,
   DialogTitle,
   Popover,
+  debounce,
 } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { useNavigate } from 'react-router-dom';
@@ -55,6 +56,7 @@ export default function Customers() {
     columns,
   } = useSelector((store) => store.customer);
   const isLoading = status === 'loading';
+  const validColumns = columns.filter((col) => !col.hide);
 
   const handleChangePage = (e, newPage) => {
     dispatch(setSelected([]));
@@ -76,12 +78,24 @@ export default function Customers() {
     setSelectMode(!selectMode);
   };
 
+  const debounceFetch = useCallback(
+    debounce(() => dispatch(fetchCustomers()), 1000),
+    [],
+  );
+
   const handleAddFilter = (filter) => {
     dispatch(addFilter(filter));
+    if (filter.value) {
+      debounceFetch();
+    }
   };
 
   const handleRemoveFilter = (id) => {
     dispatch(removeFilter(id));
+  };
+
+  const handleClearFilter = () => {
+    dispatch(clearFilter());
   };
 
   const handleChangeSort = (sort) => {
@@ -122,14 +136,8 @@ export default function Customers() {
           >
             Columns
           </Button>
-          <Button
-            onClick={() => dispatch(resetToDefault())}
-            endIcon={<Icon icon='mage:settings-fill' />}
-          >
-            Default
-          </Button>
         </div>
-        {selectMode && (
+        {selectMode && selected.length > 0 && (
           <Button
             variant='contained'
             color='red'
@@ -151,10 +159,10 @@ export default function Customers() {
         <Button
           variant='contained'
           endIcon={<Icon icon='tdesign:refresh' />}
-          onClick={() => dispatch(fetchCustomers())}
+          onClick={() => dispatch(resetToDefault())}
           disabled={isLoading}
         >
-          Refresh
+          Reset
         </Button>
       </div>
       <Popover
@@ -169,7 +177,7 @@ export default function Customers() {
         <SortBuilder
           onChange={handleChangeSort}
           value={sort}
-          columns={columns}
+          columns={validColumns}
         />
       </Popover>
       <Popover
@@ -182,10 +190,10 @@ export default function Customers() {
         }}
       >
         <FilterBuilder
-          config={columns}
+          config={validColumns}
           onAddFilter={handleAddFilter}
           onDeleteFilter={handleRemoveFilter}
-          onClearFilter={() => dispatch(clearFilter())}
+          onClearFilter={handleClearFilter}
           value={filters.data}
         />
       </Popover>

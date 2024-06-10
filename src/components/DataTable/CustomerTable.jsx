@@ -6,7 +6,6 @@ import {
   DialogActions,
   DialogTitle,
   IconButton,
-  Link,
   Menu,
   MenuItem,
 } from '@mui/material';
@@ -21,7 +20,7 @@ import {
   setSelected,
 } from '@redux/features/customerSlice';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const cx = classNames.bind(styles);
 
@@ -38,9 +37,7 @@ const TableRow = ({ obj, checked, onClick, selectMode, onOptionClick }) => {
         )}
       </td>
       <td align='center' className={cx('cell')}>
-        <Link href={`customers/${obj.id}/detail`} underline='hover'>
-          {obj.id}
-        </Link>
+        <Link to={`/customers/${obj.id}/detail`}>{obj.id}</Link>
       </td>
       <td className={cx('cell')} hidden={!obj.fullname}>
         {obj.fullname}
@@ -81,8 +78,16 @@ TableRow.propTypes = {
 };
 
 export function CustomerTable({ selectMode }) {
-  const { data, currentPage, rowsPerPage, filters, columns, status, selected } =
-    useSelector((store) => store.customer);
+  const {
+    data,
+    currentPage,
+    rowsPerPage,
+    columns,
+    status,
+    selected,
+    sort,
+    filters,
+  } = useSelector((store) => store.customer);
   const [anchorEl, setAnchorEl] = useState(null);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const open = Boolean(anchorEl);
@@ -90,6 +95,7 @@ export function CustomerTable({ selectMode }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isLoading = status === 'loading';
+  const filtersCount = filters.data.length;
 
   const isItemSelected = (item) => {
     return selected.includes(item);
@@ -97,7 +103,13 @@ export function CustomerTable({ selectMode }) {
 
   useEffect(() => {
     dispatch(fetchCustomers());
-  }, [currentPage, dispatch, rowsPerPage, filters]);
+  }, [currentPage, dispatch, rowsPerPage, sort]);
+
+  useEffect(() => {
+    if (filtersCount === 0) {
+      dispatch(fetchCustomers());
+    }
+  }, [dispatch, filtersCount]);
 
   const handleSelect = (item) => {
     if (!isItemSelected(item)) {

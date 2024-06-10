@@ -4,7 +4,7 @@
   padding: 20px;
 
   .content {
-    padding: 30px;
+    padding: 20px;
     border-radius: 5px;
     background-color: var(--light);
 
@@ -31,22 +31,29 @@
     .detail {
       display: flex;
       flex-direction: column;
-      max-width: 500px;
-      margin: auto;
-      padding: 20px 0;
+      flex-wrap: wrap;
+      column-gap: 20px;
       row-gap: 10px;
+      height: 300px;
+      padding: 20px;
 
       .info {
+        min-width: 300px;
+        max-width: 600px;
         display: flex;
         flex-wrap: wrap;
         padding: 5px 0;
-        width: 100%;
         border-bottom: 2px solid var(--gray);
 
         b {
           min-width: 100px;
           flex-grow: 1;
         }
+      }
+
+      .action-btn {
+        min-width: 300px;
+        max-width: 600px;
       }
     }
 
@@ -57,14 +64,30 @@
       padding: 20px 0;
     }
   }
+
+  .historyInvoices {
+    margin: 20px 0;
+  }
 }
 
-@media (width < 900px) or (height < 500px) {
+@media (width < 1230px) {
   .wrapper {
     padding: 0px;
 
     .content {
       border-radius: 0px;
+
+      .detail {
+        flex-wrap: nowrap;
+        height: auto;
+        padding: 20px 0;
+
+        .info,
+        .action-btn {
+          max-width: none;
+          width: 100%;
+        }
+      }
     }
   }
 }

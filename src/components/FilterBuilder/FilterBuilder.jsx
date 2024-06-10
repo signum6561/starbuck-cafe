@@ -28,9 +28,9 @@ export default function FilterBuilder({
       <Button
         onClick={() => {
           onAddFilter({
-            value: '',
-            operator: 'eq',
             column: config[0].id,
+            operator: 'eq',
+            value: '',
           });
         }}
       >
