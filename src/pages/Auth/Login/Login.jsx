@@ -1,5 +1,7 @@
 import {
   Button,
+  Checkbox,
+  FormControlLabel,
   Grid,
   InputAdornment,
   LinearProgress,
@@ -11,17 +13,13 @@ import classNames from 'classnames/bind';
 import { Icon } from '@iconify/react';
 import * as Yup from 'yup';
 import { useFormik } from 'formik';
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { login } from '@redux/features/authSlice';
 
 const cx = classNames.bind(styles);
 
 export default function Login() {
-  // const { token, login } = useAuth();
-  const { token, status, failed } = useSelector((store) => store.auth);
-  const navigate = useNavigate();
+  const { status, errors } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
   const isLoading = status === 'loading';
   const isFailed = status === 'failed';
@@ -30,6 +28,7 @@ export default function Login() {
     initialValues: {
       email: '',
       password: '',
+      remember: false,
     },
     validationSchema: Yup.object({
       email: Yup.string().email('Invalid email format').required('Required!'),
@@ -42,12 +41,6 @@ export default function Login() {
 
     validateOnChange: false,
   });
-
-  useEffect(() => {
-    if (token) {
-      navigate('/');
-    }
-  }, [navigate, token]);
 
   return (
     <div className={cx('wrapper')}>
@@ -82,7 +75,7 @@ export default function Login() {
             fullWidth
             label='Password'
             value={form.values.password}
-            helperText={(form.errors.password || failed?.message) ?? ' '}
+            helperText={(form.errors.password || errors?.message) ?? ' '}
             error={form.errors.password || isFailed}
             placeholder='Password'
             required
@@ -98,6 +91,17 @@ export default function Login() {
                 </InputAdornment>
               ),
             }}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                id='remember'
+                size='small'
+                value={form.values.remember}
+                onChange={form.handleChange}
+              />
+            }
+            label='Remember me'
           />
           <Button
             type='submit'

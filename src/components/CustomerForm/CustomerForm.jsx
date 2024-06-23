@@ -31,7 +31,7 @@ export default function CustomerForm({ onSubmit, editedCustomer, loading }) {
       address: Yup.string()
         .min(2, 'Minimum 2 characters')
         .required('Required!'),
-      birthday: Yup.date().required('Required!'),
+      birthday: Yup.date('Invalid date format').required('Required!'),
       starPoints: Yup.number()
         .positive('The value must be positive')
         .required('Required!'),

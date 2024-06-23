@@ -30,7 +30,6 @@ export default function CustomerDetail() {
   const isLoading = status === 'loading';
   const customer = data[0];
   const historyInvoices = customer?.invoices;
-  console.log(customer);
 
   useEffect(() => {
     dispatch(fetchCustomerById({ id, includeInvoices: true }));
@@ -43,7 +42,7 @@ export default function CustomerDetail() {
   }, [back, isLoading, navigate]);
 
   const handleDeleteCustomer = (id) => {
-    dispatch(deleteCustomer(id));
+    dispatch(deleteCustomer({ id }));
     setBack(true);
   };
 

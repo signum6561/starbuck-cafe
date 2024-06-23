@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import styles from './DefaultLayout.module.scss';
 import classNames from 'classnames/bind';
 import MenuBar from '@layout/components/MenuBar';
@@ -10,12 +10,8 @@ import { LinearProgress } from '@mui/material';
 const cx = classNames.bind(styles);
 export default function DefaultLayout() {
   const { menuBar, toggleMenuBar } = useMenuBar();
-  const { token, status } = useSelector((store) => store.auth);
+  const { status } = useSelector((store) => store.auth);
   const isLoading = status === 'loading';
-
-  if (!token) {
-    return <Navigate to='/login' />;
-  }
 
   return (
     <div className={cx('wrapper', menuBar && 'menuBar-active')}>

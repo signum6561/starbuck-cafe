@@ -18,7 +18,6 @@ export default function UserMenu() {
       </div>
       <Divider variant='middle' />
       <MenuList>
-        <MenuItem>Profile</MenuItem>
         <MenuItem onClick={() => dispatch(logout())}>Logout</MenuItem>
       </MenuList>
     </div>

@@ -9,7 +9,8 @@
       "@routes/*": ["./src/routes/*"],
       "@layout/*": ["./src/layout/*"],
       "@assets/*": ["./src/assets/*"],
-      "@context/*": ["./src/context/*"]
+      "@context/*": ["./src/context/*"],
+      "@services/*": ["./src/services/*"]
     }
   }
 }

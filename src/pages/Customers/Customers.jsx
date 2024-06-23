@@ -69,8 +69,12 @@ export default function Customers() {
   };
 
   const handleDeleteSelected = () => {
-    dispatch(deleteCustomer(selected.join(',')));
-    dispatch(setSelected([]));
+    switchMode();
+    dispatch(
+      deleteCustomer({ id: selected.join(','), refetchCustomers: true }),
+    );
+    dispatch(fetchCustomers());
+    setDeleteManyDialog(false);
   };
 
   const switchMode = () => {
@@ -208,7 +212,6 @@ export default function Customers() {
             color='red'
             onClick={() => {
               handleDeleteSelected();
-              setDeleteManyDialog(false);
             }}
           >
             Delete

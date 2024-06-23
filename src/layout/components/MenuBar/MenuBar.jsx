@@ -5,20 +5,10 @@ import Tabs from '@components/Tabs';
 import Tab from '@components/Tab';
 import { useNavigate } from 'react-router-dom';
 import TabsList from '@components/TabsList';
-import { Avatar, Button } from '@mui/material';
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { getUserData } from '@redux/features/authSlice';
 
 const cx = classNames.bind(styles);
 export default function MenuBar() {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { user } = useSelector((store) => store.auth);
-
-  useEffect(() => {
-    dispatch(getUserData());
-  }, [dispatch]);
 
   return (
     <div className={cx('wrapper')}>

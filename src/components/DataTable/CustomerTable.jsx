@@ -95,7 +95,7 @@ export function CustomerTable({ selectMode }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isLoading = status === 'loading';
-  const filtersCount = filters.data.length;
+  const filterCount = filters.data.length;
 
   const isItemSelected = (item) => {
     return selected.includes(item);
@@ -103,13 +103,7 @@ export function CustomerTable({ selectMode }) {
 
   useEffect(() => {
     dispatch(fetchCustomers());
-  }, [currentPage, dispatch, rowsPerPage, sort]);
-
-  useEffect(() => {
-    if (filtersCount === 0) {
-      dispatch(fetchCustomers());
-    }
-  }, [dispatch, filtersCount]);
+  }, [currentPage, dispatch, rowsPerPage, sort, filterCount]);
 
   const handleSelect = (item) => {
     if (!isItemSelected(item)) {
@@ -135,7 +129,7 @@ export function CustomerTable({ selectMode }) {
   };
 
   const handleDelete = (id) => {
-    dispatch(deleteCustomer(id));
+    dispatch(deleteCustomer({ id, refetchCustomers: true }));
   };
 
   const exceptColumns = columns.filter((col) => col.hide).map((col) => col.id);
@@ -181,7 +175,7 @@ export function CustomerTable({ selectMode }) {
               <CircularProgress thickness={5} />
             </div>
           )}
-          {customerList.map((row) => {
+          {customerList?.map((row) => {
             return (
               <TableRow
                 key={row.id}
@@ -207,7 +201,10 @@ export function CustomerTable({ selectMode }) {
         </MenuItem>
         <MenuItem
           sx={{ color: '#ff0000' }}
-          onClick={() => setDeleteDialog(true)}
+          onClick={() => {
+            setDeleteDialog(true);
+            setAnchorEl(null);
+          }}
         >
           Delete
         </MenuItem>

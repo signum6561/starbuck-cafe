@@ -1,10 +1,12 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axiosInstance from '@services/axiosClient';
+import { queryBuilder } from '@services/queryBuilder';
+import { toast } from 'react-toastify';
 
 const initialState = {
   status: 'idle',
   currentPage: 1,
-  rowsPerPage: sessionStorage.getItem('rowsPerPage') ?? 10,
+  rowsPerPage: 10,
   total: 0,
   pageCount: 0,
   data: [],
@@ -61,85 +63,57 @@ const initialState = {
   ],
 };
 
-const BASE_URL = 'http://localhost:8000/api/v1/customers';
+const BASE_PREFIX = '/v1/customers';
 
 export const fetchCustomers = createAsyncThunk(
   'customer/fetchCustomers',
   async (_, thunkAPI) => {
     const { currentPage, rowsPerPage, filters, sort } =
       thunkAPI.getState().customer;
-    const filtersStr = filters.data
-      .filter((filter) => Boolean(filter.value))
-      .map(
-        (filter) =>
-          `filters[${filter.column}][$${filter.operator}]=${filter.value}`,
-      )
-      .join('&');
-    const sortStr = sort.column ? `sort=${sort.column}%3A${sort.order}` : '';
-    const { token } = thunkAPI.getState().auth;
-    const res = await axios.get(
-      `${BASE_URL}?page=${currentPage}&perPage=${rowsPerPage}&${filtersStr}&${sortStr}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
+    const queries = new queryBuilder()
+      .paginate(currentPage, rowsPerPage)
+      .filter(filters.data)
+      .sort(sort)
+      .build();
+
+    const res = await axiosInstance.get(`${BASE_PREFIX}?${queries}`);
     return res.data;
   },
 );
 
 export const fetchCustomerById = createAsyncThunk(
   'customer/fetchCustomerById',
-  async ({ id, includeInvoices = false }, thunkAPI) => {
-    const { token } = thunkAPI.getState().auth;
-    const res = await axios.get(
-      `${BASE_URL}/${id}${includeInvoices ? '?includeInvoices=true' : ''}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
+  async ({ id, includeInvoices = false }) => {
+    const res = await axiosInstance
+      .get(
+        `${BASE_PREFIX}/${id}${includeInvoices ? '?includeInvoices=true' : ''}`,
+      )
+      .then((res) => res.data);
     return res.data;
   },
 );
 
 export const createCustomer = createAsyncThunk(
   'customer/createCustomer',
-  async (customer, thunkAPI) => {
-    const { token } = thunkAPI.getState().auth;
-    await axios.post(`${BASE_URL}`, customer, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  async (payload) => {
+    await axiosInstance.post(`${BASE_PREFIX}`, payload);
   },
 );
 
 export const updateCustomer = createAsyncThunk(
   'customer/updateCustomer',
-  async (customer, thunkAPI) => {
-    const { token } = thunkAPI.getState().auth;
-    await axios.put(`${BASE_URL}/${customer.id}`, customer, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  async (payload) => {
+    await axiosInstance.put(`${BASE_PREFIX}/${payload.id}`, payload);
   },
 );
 
 export const deleteCustomer = createAsyncThunk(
   'customer/deleteCustomer',
-  async (id, thunkAPI) => {
-    const { token } = thunkAPI.getState().auth;
-    await axios.delete(`${BASE_URL}/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    thunkAPI.dispatch(fetchCustomers());
-    return id;
+  async ({ id, refetchCustomers = false }, thunkAPI) => {
+    await axiosInstance.delete(`${BASE_PREFIX}/${id}`);
+    if (refetchCustomers) {
+      await thunkAPI.dispatch(fetchCustomers()).unwrap();
+    }
   },
 );
 
@@ -155,22 +129,20 @@ const customerSlice = createSlice({
     },
     changeRowsPerPage: (state, action) => {
       state.rowsPerPage = action.payload;
-      sessionStorage.setItem('rowsPerPage', action.payload);
       state.currentPage = 1;
     },
-    addFilter: (state, action) => {
-      const filter = action.payload;
+    addFilter: (state, { payload }) => {
       state.filters.start++;
       const { start, data } = state.filters;
-      const idx = data.findIndex((val) => val.id === filter.id);
+      const idx = data.findIndex((val) => val.id === payload.id);
       if (idx !== -1) {
-        state.filters.data[idx] = filter;
+        state.filters.data[idx] = payload;
       } else {
-        state.filters.data = [...data, { ...filter, id: start }];
+        state.filters.data = [...data, { ...payload, id: start }];
       }
     },
-    removeFilter: (state, action) => {
-      const id = action.payload;
+    removeFilter: (state, { payload }) => {
+      const id = payload;
       const { data } = state.filters;
       state.filters.data = data.filter((filter) => filter.id !== id);
     },
@@ -180,8 +152,8 @@ const customerSlice = createSlice({
     changeSort: (state, action) => {
       state.sort = action.payload;
     },
-    hideColumn: (state, action) => {
-      const { columnId, value } = action.payload;
+    hideColumn: (state, { payload }) => {
+      const { columnId, value } = payload;
       const { filters, sort } = state;
       const columns = state.columns;
       const idx = columns.findIndex((col) => col.id === columnId);
@@ -217,12 +189,11 @@ const customerSlice = createSlice({
       .addCase(fetchCustomers.pending, (state) => {
         state.status = 'loading';
       })
-      .addCase(fetchCustomers.fulfilled, (state, action) => {
+      .addCase(fetchCustomers.fulfilled, (state, { payload }) => {
         state.status = 'success';
-        const payload = action.payload;
         state.data = payload.data;
-        state.total = payload.meta.total;
-        state.pageCount = payload.meta.last_page;
+        state.total = payload.meta?.total;
+        state.pageCount = payload.meta?.last_page;
         if (state.currentPage >= state.pageCount && state.currentPage > 1) {
           state.currentPage = state.pageCount;
         }
@@ -233,9 +204,9 @@ const customerSlice = createSlice({
       .addCase(fetchCustomerById.pending, (state) => {
         state.status = 'loading';
       })
-      .addCase(fetchCustomerById.fulfilled, (state, action) => {
+      .addCase(fetchCustomerById.fulfilled, (state, { payload }) => {
         state.status = 'success';
-        state.data = [action.payload.data];
+        state.data = [payload];
       })
       .addCase(fetchCustomerById.rejected, (state) => {
         state.status = 'failed';
@@ -246,6 +217,9 @@ const customerSlice = createSlice({
       .addCase(updateCustomer.fulfilled, (state) => {
         state.status = 'success';
         state.customer = null;
+        toast.success('Updated successfully', {
+          toastId: 'updated',
+        });
       })
       .addCase(updateCustomer.rejected, (state) => {
         state.status = 'failed';
@@ -255,6 +229,9 @@ const customerSlice = createSlice({
       })
       .addCase(createCustomer.fulfilled, (state) => {
         state.status = 'success';
+        toast.success('Created successfully', {
+          toastId: 'created',
+        });
       })
       .addCase(createCustomer.rejected, (state) => {
         state.status = 'failed';

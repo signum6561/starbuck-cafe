@@ -10,18 +10,17 @@ import classNames from 'classnames/bind';
 import * as Yup from 'yup';
 import { useFormik } from 'formik';
 import { Icon } from '@iconify/react';
-import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { register } from '@redux/features/authSlice';
+import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 
 const cx = classNames.bind(styles);
 export default function Register() {
-  // const { user, register } = useAuth();
-  const { token, status, failed } = useSelector((store) => store.auth);
-  const navigate = useNavigate();
+  const { status, failed, errors } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
   const isLoading = status === 'loading';
+  const [toLogin, setToLogin] = useState(false);
 
   const form = useFormik({
     initialValues: {
@@ -43,15 +42,14 @@ export default function Register() {
     }),
     onSubmit: (values) => {
       dispatch(register(values));
+      setToLogin(true);
     },
     validateOnChange: false,
   });
 
-  useEffect(() => {
-    if (token) {
-      navigate('/');
-    }
-  }, [navigate, token]);
+  if (toLogin && status === 'success') {
+    return <Navigate to='/login' replace />;
+  }
 
   return (
     <div className={cx('wrapper')}>
@@ -65,10 +63,8 @@ export default function Register() {
             fullWidth
             label='Username'
             value={form.values.username}
-            helperText={
-              (form.errors.username || failed?.errors?.username[0]) ?? ' '
-            }
-            error={form.errors.username || failed?.errors?.username}
+            helperText={(form.errors.username || errors?.username[0]) ?? ' '}
+            error={form.errors.username || errors?.username}
             placeholder='Username'
             onChange={form.handleChange}
             disabled={isLoading}
@@ -86,8 +82,8 @@ export default function Register() {
             fullWidth
             label='Email'
             value={form.values.email}
-            helperText={(form.errors.email || failed?.errors?.email[0]) ?? ' '}
-            error={form.errors.email || failed?.errors?.email}
+            helperText={(form.errors.email || errors?.email[0]) ?? ' '}
+            error={form.errors.email || errors?.email}
             placeholder='Email'
             onChange={form.handleChange}
             disabled={isLoading}

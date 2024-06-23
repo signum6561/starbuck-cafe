@@ -7,7 +7,7 @@ import { useState } from 'react';
 const cx = classNames.bind(styles);
 export function HistoryInvoices({ data }) {
   const rowsPerPage = 5;
-  const pageCount = data?.length ? data.length / 5 : 0;
+  const pageCount = data?.length ? Math.ceil(data.length) / 5 : 0;
   const [page, setPage] = useState(1);
 
   const handleChangePage = (e, value) => {

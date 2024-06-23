@@ -101,6 +101,7 @@ export default function Filter({
             shrink: true,
           }}
           fullWidth
+          autoFocus
         />
       </div>
     </div>
